@@ -1,35 +1,58 @@
-def Towers_of_Hanoi(pieces)
-  array1 = (1..pieces).to_a.reverse!
-  array2 = []
-  array3 = []
-  game = [array1, array2, array3]
-  solution = (1..pieces).to_a.reverse!
-  print game 
-  puts ''
-  while game[2] != solution
-    puts "Which pile from?"
-    home = gets.to_i#.chomp
-    if game[home - 1].empty?
-      puts "invalid move"
-      next
-    end      
-    puts "Which pile to?"
-    destination = gets.to_i    
-    if game[destination-1].empty? or game[home - 1].last < game[destination - 1].last
-      game[destination - 1]<<game[home - 1].pop
-    else
-      puts "invalid move"
-      next
-    end
-    print game 
-    puts ''
-    print solution
-    puts ''
-    
+class Towers_of_Hanoi
+  def initialize discs
+    @game = [ (1..discs).to_a.reverse!, [], [] ]
+    @solution = (1..discs).to_a.reverse!
   end
-  puts "you solved the puzzle" 
+
+  def display_game
+    puts "\n#{@game.to_s}"
+    puts
+  end
+
+  def play_game
+    display_game
+    until solved?
+      puts "Board State:"
+      display_game
+      take_turn
+    end
+
+    puts "Congrats, you win!"
+    display_game
+  end
+
+
+  private
+
+  def take_turn
+    puts "All moves label piles from 1 - 3, where do you want to move?"
+    puts "Source pile?"
+    home =gets.to_i
+    puts "Which pile to?"
+    destination = gets.to_i
+
+    if valid_move? home, destination
+      @game[destination - 1]<< @game[home - 1].pop
+    end
+  end
+
+  def solved?
+    @game[1] == @solution || @game[2] == @solution
+  end
+
+  def valid_move? home, destination
+    truthy_home = !@game[home - 1].empty?
+    truthy_dest = @game[destination-1].empty? || @game[home - 1].last < @game[destination - 1].last
+    puts "Invalid Move!" unless truthy_home && truthy_dest
+    truthy_home && truthy_dest
+  end
 end
 
 
 
-Towers_of_Hanoi(3)
+
+if $PROGRAM_NAME == __FILE__
+  tower_game = Towers_of_Hanoi.new(3)
+  tower_game.play_game
+end
+
