@@ -14,8 +14,4 @@ class Array
   end
 end
 
-print [-1, 0, 2, -2, 1].two_sum
-puts ''
-print [-1, 1, -2, 2].two_sum
-
       
