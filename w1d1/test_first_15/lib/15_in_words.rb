@@ -34,46 +34,27 @@ class Fixnum
     8  => "eighty",
     9  => "ninety"
   }
-  
+  BIG_NUMS = [ [" trillion ", 1000000000000],
+                [" billion ", 1000000000],
+                [" million ", 1000000],
+                [" thousand ", 1000] ]
   
   def in_words
     return "zero" if self == 0 #special case for zero
     working = self
-    
-    trillions = working/1000000000000
-    
-    working = working % 1000000000000
-    
-    trillions_place = ''
-    trillions_place = parse_triplet(trillions) + " trillion " if trillions > 0
-    
-    billions = working/ 1000000000
-    
-    working = working % 1000000000
-    
-    billions_place = ''
-    billions_place = parse_triplet(billions) + " billion " if billions > 0
-    
-    
-    millions = working / 1000000
-    
-    working = working % 1000000
-    
-    millions_place = ''
-    millions_place = parse_triplet(millions) + " million " if millions > 0
-    
-  
-    thousands = working/1000
-    
-    working = working % 1000
-    
-    thousands_place = ''
-    thousands_place = parse_triplet(thousands) + " thousand " if thousands > 0
-    
-    
-    
-    words = trillions_place + billions_place + millions_place + thousands_place + parse_triplet(working)
-    words = words.strip
+    total_word = ''
+
+    BIG_NUMS.each do |cycle|
+      place = cycle[0]
+      num = cycle[1]
+
+      place_triplet = working/num
+      working = working % num
+
+      total_word += parse_triplet(place_triplet) + place if place_triplet > 0 
+    end
+
+    words = total_word + parse_triplet(working)
     return words.split.join(" ")
   end
   
