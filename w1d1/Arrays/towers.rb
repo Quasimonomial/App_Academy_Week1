@@ -23,6 +23,9 @@ class Towers_of_Hanoi
 
 
   private
+  def make_move home, destination
+    @game[destination - 1]<< @game[home - 1].pop
+  end
 
   def take_turn
     puts "All moves label piles from 1 - 3, where do you want to move?"
@@ -32,7 +35,7 @@ class Towers_of_Hanoi
     destination = gets.to_i
 
     if valid_move? home, destination
-      @game[destination - 1]<< @game[home - 1].pop
+      make_move home, destination     
     end
   end
 
@@ -43,7 +46,6 @@ class Towers_of_Hanoi
   def valid_move? home, destination
     truthy_home = !@game[home - 1].empty?
     truthy_dest = @game[destination-1].empty? || @game[home - 1].last < @game[destination - 1].last
-    puts "Invalid Move!" unless truthy_home && truthy_dest
     truthy_home && truthy_dest
   end
 end
