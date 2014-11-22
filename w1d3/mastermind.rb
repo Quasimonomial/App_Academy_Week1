@@ -1,3 +1,24 @@
+#stole some array extending functionality form this guy:
+# => http://www.dzone.com/snippets/full-intersection-between-2
+class Array
+  def real_intersection(arr2)
+    self_sorted = self.sort
+    target_sorted = arr2.sort
+    intersection= []
+    jstart=0
+    for i in (0..self_sorted.length-1)
+      for j in (jstart..target_sorted.length-1)
+        if self_sorted[i] == target_sorted[j]
+          jstart = j+1
+          intersection[intersection.length] = self_sorted[i]
+          break
+        end
+      end
+    end
+    return intersection
+  end
+end
+
 class Game
   def initialize vault_keeper, code_breaker, allowed_turns
     @vault_keeper = vault_keeper
@@ -13,7 +34,7 @@ class Game
     get_code
     turns_taken = 0
 
-    while turns_taken <= @allowed_turns
+    while turns_taken < @allowed_turns
       turns_taken += 1
       puts "This is turn #{turns_taken}"
       if take_turn
@@ -44,6 +65,7 @@ class ComputerPlayer
   def initialize
     @exact_matches = 0
     @near_matches = 0
+    @guess_history = []
   end
 
   def generate_code
@@ -54,15 +76,48 @@ class ComputerPlayer
 
   def get_break_attempt
     #must change this for the computer to be smart, for now it just guesses randomly
-    secret_code = []
-    4.times { secret_code << rand(6)}
-    Code.new(secret_code)
+    unless @last_code
+      @last_code = Code.new([0,0,0,0])
+      return Code.new([0,0,0,0]) #return the first code if we have no code history
+    end
+    current_code_array = @last_code.deep_copy.code
+    current_code_array = increment_code_attempt(current_code_array)
+    while !possible_guess?(current_code_array)
+      #p "generating a possible guess with #{current_code_array} against last code of #{@last_code.code}"
+      break if current_code_array == [5, 5, 5, 5]
+      current_code_array = increment_code_attempt(current_code_array)
+    end
+     @last_code = Code.new(current_code_array)
+    Code.new(current_code_array)
   end
 
   def update_guess_progress exact, near
     @exact_matches = exact
     @near_matches = near
+   
   end
+
+  private
+  def increment_code_attempt code_array #returns the next code from the possibility feild
+    code_array[0] += 1
+    code_array.each_with_index do |peg, index|
+      if peg >= 6
+        code_array[index] = 0
+        code_array[index + 1] += 1
+      end
+    end
+    code_array
+  end
+
+  def possible_guess? code_array
+    guess = Code.new(code_array)
+    # p "Testing Code versus current:"
+    # p code_array
+    # p "exact matches:  #{@last_code.exact_matches(guess)}"
+    # p "near matches: #{ @last_code.near_matches(guess)}"
+    @last_code.exact_matches(guess) == @exact_matches && @last_code.near_matches(guess) == @near_matches
+  end
+
 end
 
 class HumanPlayer
@@ -72,7 +127,16 @@ class HumanPlayer
   end
 
   def generate_code
-    #new_code
+    puts "What code do you want the other player to try to guess?"
+    code = []
+    while code.length < 4
+      puts "pick a number 0:Red, 1:Orange, 2:Yellow, 3:Green, 4:Blue, 5:Indigo"
+      this_num = gets.chomp.to_i
+      code << this_num
+    end
+    secret_code = Code.new(code)
+    p "Generateing Code #{secret_code.convert_to_string}"
+    secret_code
   end
 
   def get_break_attempt
@@ -96,7 +160,7 @@ class HumanPlayer
 end
 
 class Code
-  attr_reader :code
+  attr_accessor :code
 
   def initialize code
     @code = code
@@ -104,6 +168,10 @@ class Code
 
   def == break_attempt
     @code == break_attempt.code
+  end
+ 
+  def deep_copy
+    Code.new(@code.dup)
   end
 
   def convert_to_string
@@ -127,28 +195,7 @@ end
 if $PROGRAM_NAME == __FILE__
   comp = ComputerPlayer.new
   person = HumanPlayer.new
-  game = Game.new(comp, person, 10)
+  game = Game.new(person, comp, 10)
   game.play_game
 end
 
-
-#stole some array extending functionality form this guy:
-# => http://www.dzone.com/snippets/full-intersection-between-2
-class Array
-  def real_intersection(arr2)
-    self_sorted = self.sort
-    target_sorted = arr2.sort
-    intersection= []
-    jstart=0
-    for i in (0..self_sorted.length-1)
-      for j in (jstart..target_sorted.length-1)
-        if self_sorted[i] == target_sorted[j]
-          jstart = j+1
-          intersection[intersection.length] = self_sorted[i]
-          break
-        end
-      end
-    end
-    return intersection
-  end
-end
