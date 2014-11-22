@@ -76,25 +76,24 @@ class ComputerPlayer
 
   def get_break_attempt
     #must change this for the computer to be smart, for now it just guesses randomly
-    unless @last_code
-      @last_code = Code.new([0,0,0,0])
-      return Code.new([0,0,0,0]) #return the first code if we have no code history
+    if @guess_history.empty?
+      first_attempt = [0,0,0,0]
+      @guess_history << GuessHistroryEntry.new(first_attempt, -1, -1)
+      return Code.new([0,0,0,0])
     end
-    current_code_array = @last_code.deep_copy.code
+    current_code_array = @guess_history.last.dup.code
     current_code_array = increment_code_attempt(current_code_array)
     while !possible_guess?(current_code_array)
-      #p "generating a possible guess with #{current_code_array} against last code of #{@last_code.code}"
       break if current_code_array == [5, 5, 5, 5]
       current_code_array = increment_code_attempt(current_code_array)
     end
-     @last_code = Code.new(current_code_array)
+    @guess_history << GuessHistroryEntry.new(current_code_array, -1, -1)
     Code.new(current_code_array)
   end
 
   def update_guess_progress exact, near
-    @exact_matches = exact
-    @near_matches = near
-   
+    @guess_history.last.exact_matches = exact
+    @guess_history.last.near_matches = near
   end
 
   private
@@ -111,11 +110,30 @@ class ComputerPlayer
 
   def possible_guess? code_array
     guess = Code.new(code_array)
-    # p "Testing Code versus current:"
-    # p code_array
-    # p "exact matches:  #{@last_code.exact_matches(guess)}"
-    # p "near matches: #{ @last_code.near_matches(guess)}"
-    @last_code.exact_matches(guess) == @exact_matches && @last_code.near_matches(guess) == @near_matches
+    @guess_history.each do |prev_guess|
+      next if prev_guess.exact_matches == -1 || prev_guess.near_matches == -1
+      
+      prev_guess_obj = Code.new(prev_guess.code.dup)
+
+
+      return false unless prev_guess_obj.exact_matches(guess) ==  prev_guess.exact_matches && prev_guess_obj.near_matches(guess) == prev_guess.near_matches
+    end
+    return true
+  end
+
+  class GuessHistroryEntry
+    attr_accessor :code, :exact_matches, :near_matches
+    def initialize code, exact_matches, near_matches
+      #we actually initialize exact and near matches at -1 to indicate we have not gotten our answer fromt he game class yet
+      @code = code
+      @exact_matches = exact_matches
+      @near_matches = near_matches
+    end
+
+    def dup
+      GuessHistroryEntry.new(@code.dup, @exact_matches, @near_matches)
+    end
+
   end
 
 end
