@@ -8,7 +8,15 @@ class Hangman
   def game
     init_game
     p "Ready to Play the game"
-    p "#{@executioner.word} is the chosen word"
+    p "#{@executioner.word} is the chosen word" #bad bad not good
+
+    turns_taken = 0
+    while turns_taken < @turns_allowed
+      turns_taken += 1
+      p "Taking turn #{turns_taken}"
+      take_turn
+    end
+
   end
 
   def init_game
@@ -17,6 +25,9 @@ class Hangman
     @executioner.pick_word
   end
 
+  def take_turn
+    p "Taking a turn"
+  end
 
 
 end
