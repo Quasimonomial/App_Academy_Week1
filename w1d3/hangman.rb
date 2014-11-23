@@ -8,10 +8,13 @@ class Hangman
   def game
     init_game
     p "Ready to Play the game"
+    p "#{@executioner.word} is the chosen word"
   end
 
   def init_game
-    p "Initing the game"
+    p "Welcolme To Hangman!"
+    p "It is time for the executioner to choose a word to be guessed"
+    @executioner.pick_word
   end
 
 
@@ -19,11 +22,37 @@ class Hangman
 end
 
 class HumanPlayer
+  attr_reader :word
+  def pick_word
+
+  end
 
 end
 
 class ComputerPlayer
+  attr_reader :word
 
+  def initialize
+     @dictionary = populate_dictionary
+  end
+
+  def pick_word
+    #gets you a word at least 4 letters long
+    word = ''
+
+    while word.length < 4
+      word = @dictionary[rand(0...@dictionary.length)].chomp
+    end
+    @word = word
+  end
+
+  def populate_dictionary
+    working_dictionary = []
+    File.foreach("dictionary.txt") do |line|
+      working_dictionary << line.chomp
+    end
+    working_dictionary
+  end
 
 end
 
